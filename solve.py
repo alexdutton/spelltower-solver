@@ -1,13 +1,11 @@
 words = set(w.upper() for w in open('/usr/share/dict/words').read().split())
-
-swords = sorted(words)
+words = sorted(words)
 
 full_word_tree = {}
-
-for sword in swords:
+for word in words:
     word_tree = full_word_tree
-    last = len(sword) - 1
-    for i, ch in enumerate(sword):
+    last = len(word) - 1
+    for i, ch in enumerate(word):
         if ch not in word_tree:
             word_tree[ch] = (i == last, {})
         word_tree = word_tree[ch][1]
@@ -43,6 +41,9 @@ min_lengths = """\
 """
 
 def get(g, x, y):
+    """
+    Find a character from the original grid.
+    """
     try:
         return g[y][x].strip()
     except IndexError:
@@ -63,11 +64,12 @@ for y in range(cy):
     print
 
 
-used = frozenset()
-
-def get_moves(grid, word_tree, used):
-    x, y = used[-1]
-    possible = {
+def adjacent_cells(p):
+    """
+    Returns co-ordinates for all cells adjacent to the one given.
+    """
+    x, y = p
+    return {
         (x-1, y-1),
         (x-1, y  ),
         (x-1, y+1),
@@ -77,9 +79,24 @@ def get_moves(grid, word_tree, used):
         (x+1, y  ),
         (x+1, y+1)
     }
-    for px, py in possible:
-        if not (0 <= px < cx and 0 <= py < cy):
-            continue
+
+def all_cells():
+    return {(x, y) for x in range(cx) for y in range(cy)}
+
+def get_moves(grid, word_tree, used):
+    """
+    Work out what moves can be made.
+
+    Takes a grid, a partial word tree, and a collection of co-ordinates already
+    visited.  Returns [((is_word, word_tree), p)], where p is the co-ordinates
+    of a cell for each possible move.
+    """
+    if used:
+        possible = adjacent_cells(used[-1])
+    else: # We can start anywhere
+        possible = all_cells()
+
+    # Filter out the ones that aren't possible
     possible = {(px, py) for (px, py) in possible
                    if (px, py) not in used and           # Haven't used this letter before
                       0 <= px < cx and 0 <= py < cy and  # Haven't strayed outside the grid
@@ -87,8 +104,6 @@ def get_moves(grid, word_tree, used):
 
     return [(word_tree[grid[p]], p) for p in possible]
     
-    
-
 def seek(grid, word, word_tree, used, found, min_length):
     moves = get_moves(grid, word_tree, used)
     for (is_word, new_word_tree), p in moves:
@@ -100,18 +115,7 @@ def seek(grid, word, word_tree, used, found, min_length):
         seek(grid, new_word, new_word_tree, new_used, found, new_min_length)
 
 found = set()
-for x in range(cx):
-    for y in range(cy):
-        p = x, y
-        word = grid[p]
-        try:
-            word_tree = full_word_tree[word][1]
-        except KeyError:
-            continue
-        else:
-            min_length = max(min_lengths[p], 3)
-            seek(grid, word, word_tree, (p,), found, min_length)
+seek(grid, '', full_word_tree, (), found, 3)
 
 print '\n'.join(sorted(found, key=lambda w: (len(w), w)))
-
 
