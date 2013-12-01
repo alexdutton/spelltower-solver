@@ -3,7 +3,9 @@ A SpellTower solver
 
 A very simple and hacky solver for SpellTower.
 
-To use it, edit the ``grid`` variable in ``solver.py``. Use spaces for empty tiles, and ``'.'`` for solid blanks. If you care about minimum word lengths, edit the ``min_lengths`` variable to contain digits that correspond to the letters in ``grid``.
+To use it, edit the ``grid`` variable in ``solver.py``. Use spaces for empty tiles, and ``'.'`` for solid blanks. If you care about minimum word lengths, edit the ``min_lengths`` variable to contain digits that correspond to the letters in ``grid``. Then just run::
+
+   $ python solve.py
 
 It's hard-coded to use ``/usr/share/dict/words`` on Linux; it suggests lots of words that SpellTower doesn't accept.
 
